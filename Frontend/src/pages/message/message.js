@@ -1,7 +1,15 @@
+<<<<<<< Updated upstream
 import { useNavigate } from "react-router-dom";
 import { Logo } from "../../svgs/logoSVG";
 import styles from "./message.module.css";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
+=======
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { FaMicrophone } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { Logo } from "../../svgs/logoSVG";
+import styles from "./message.module.css";
+>>>>>>> Stashed changes
 import axios from "axios";
 import Markdown from "react-markdown";
 import LoginContext from "../../context/context";
@@ -99,6 +107,7 @@ function Message() {
           // ]);
         } else if (data?.type === "server:response:chunk") {
           setChat((prevchat) => {
+<<<<<<< Updated upstream
             // prevchat.at(-1).message += data.chunk;
             // console.log("!!!", prevchat);
             // console.log("!!!", prevchat.slice(-1));
@@ -112,12 +121,39 @@ function Message() {
                 isLoading: true,
               },
             ];
+=======
+            const lastMessageIndex = prevchat.length - 1;
+            const lastMessage = prevchat[lastMessageIndex];
+
+            
+            if (lastMessage && lastMessage.own) {
+              return [
+                ...prevchat,
+                { message: data.chunk, own: false, isLoading: true },
+              ];
+            } else if (lastMessage && !lastMessage.isLoading) {
+              
+              const updatedMessage = {
+                ...lastMessage,
+                message: lastMessage.message + data.chunk,
+              };
+              return [...prevchat.slice(0, lastMessageIndex), updatedMessage];
+            } else {
+              
+              const updatedMessage = {
+                ...lastMessage,
+                message: lastMessage.message + data.chunk,
+              };
+              return [...prevchat.slice(0, lastMessageIndex), updatedMessage];
+            }
+>>>>>>> Stashed changes
           });
           // console.log("@text", data.chunk);
         } else if (data?.type === "server:response:end") {
           // response = "";
           // promptBut.disabled = false;
           setChat((prevchat) => {
+<<<<<<< Updated upstream
             return [
               ...prevchat.slice(0, -1),
               {
@@ -126,6 +162,15 @@ function Message() {
                 isLoading: false,
               },
             ];
+=======
+            const lastMessageIndex = prevchat.length - 1;
+            const lastMessage = prevchat[lastMessageIndex];
+            if (lastMessage && lastMessage.isLoading) {
+              const updatedMessage = { ...lastMessage, isLoading: false };
+              return [...prevchat.slice(0, lastMessageIndex), updatedMessage];
+            }
+            return prevchat;
+>>>>>>> Stashed changes
           });
           setChatState("idle");
         }
@@ -168,6 +213,64 @@ function Message() {
     }
   };
 
+<<<<<<< Updated upstream
+=======
+  const handleSpeechRecognition = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      console.error("Speech Recognition is not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    let recognitionTimeout;
+
+    const stopRecognition = () => {
+      clearTimeout(recognitionTimeout);
+      recognition.stop();
+      setIsListening(false);
+    };
+
+    recognition.start();
+    setIsListening(true);
+
+    recognition.onresult = (event) => {
+      let finalTranscript = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript;
+        }
+      }
+
+      if (finalTranscript) {
+        setChat((prevchat) => [...prevchat, { message: finalTranscript, own: true }]);
+        if (ws.current) {
+          ws.current.send(JSON.stringify({ type: "client:prompt", prompt: finalTranscript }));
+        }
+        setChatState("busy");
+        setChat((prevchat) => [
+          ...prevchat,
+          { message: "", own: false, isLoading: true },
+        ]);
+        clearTimeout(recognitionTimeout);
+        recognitionTimeout = setTimeout(stopRecognition, 2000);
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech Recognition Error:", event.error);
+      stopRecognition();
+    };
+    recognition.onend = stopRecognition;
+  };
+>>>>>>> Stashed changes
   return (
     <div className={styles.messageContainer}>
       <header>
